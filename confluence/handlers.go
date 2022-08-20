@@ -4,14 +4,17 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"log"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/anacrolix/dht/v2/bep44"
 	"github.com/anacrolix/dht/v2/exts/getput"
+	"github.com/anacrolix/log"
 	"github.com/anacrolix/torrent"
 	"github.com/anacrolix/torrent/bencode"
 	"github.com/anacrolix/torrent/metainfo"
@@ -233,7 +236,7 @@ func (h *Handler) handleBep44(w http.ResponseWriter, r *http.Request) {
 			defer wg.Done()
 			res, _, err := getput.Get(r.Context(), target, s, nil, []byte(r.FormValue("salt")))
 			if err != nil {
-				log.Printf("error getting %x from %v: %v", target, s, err)
+				h.Logger.Levelf(log.Warning, "error getting %x from %v: %v", target, s, err)
 				return
 			}
 			resChan <- res
@@ -249,4 +252,121 @@ func (h *Handler) handleBep44(w http.ResponseWriter, r *http.Request) {
 	case <-wgDoneChan:
 		http.Error(w, "not found", http.StatusNotFound)
 	}
+}
+
+func (h *Handler) uploadHandler(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseMultipartForm(10 << 20)
+	if err != nil {
+		err = fmt.Errorf("parsing multipart form: %w", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	info := metainfo.Info{
+		Name: r.MultipartForm.Value["name"][0],
+	}
+	files := r.MultipartForm.File["files"]
+	for _, fh := range files {
+		path := strings.Split(fh.Filename, "/")
+		info.Files = append(info.Files, metainfo.FileInfo{
+			Length:   fh.Size,
+			Path:     path,
+			PathUtf8: path,
+		})
+	}
+	info.PieceLength = metainfo.ChoosePieceLength(info.TotalLength())
+	piecesReader, piecesWriter := io.Pipe()
+	generatePiecesErrChan := make(chan error, 1)
+	go func() {
+		var err error
+		info.Pieces, err = metainfo.GeneratePieces(piecesReader, info.PieceLength, nil)
+		generatePiecesErrChan <- err
+	}()
+	err = writeMultipartFiles(piecesWriter, files)
+	piecesWriter.Close()
+	if err != nil {
+		err = fmt.Errorf("writing files to piece generator: %w", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	generatePiecesErr := <-generatePiecesErrChan
+	if generatePiecesErr != nil {
+		panic(generatePiecesErr)
+	}
+	mi := metainfo.MetaInfo{
+		InfoBytes:    bencode.MustMarshal(info),
+		CreatedBy:    "anacrolix/confluence upload",
+		CreationDate: time.Now().Unix(),
+	}
+	// Save before running Handler.ModifyUploadMetainfo, because the modifications may be unique to different runs of confluence.
+	err = h.saveMetaInfo(mi, mi.HashInfoBytes())
+	if err != nil {
+		err = fmt.Errorf("saving metainfo: %w", err)
+		log.Printf("error uploading: %v", err)
+	}
+	err = h.storeUploadPieces(&info, mi.HashInfoBytes(), files)
+	if err != nil {
+		err = fmt.Errorf("storing upload pieces: %w", err)
+		log.Printf("error uploading: %v", err)
+	}
+	if f := h.ModifyUploadMetainfo; f != nil {
+		f(&mi)
+	}
+	mi.Write(w)
+}
+
+func writeMultipartFiles(w io.Writer, fhs []*multipart.FileHeader) error {
+	for _, fh := range fhs {
+		file, err := fh.Open()
+		if err != nil {
+			err = fmt.Errorf("opening file %q: %w", fh.Filename, err)
+			return err
+		}
+		_, err = io.Copy(w, file)
+		file.Close()
+		if err != nil {
+			err = fmt.Errorf("copying file: %w", err)
+			return err
+		}
+	}
+	return nil
+}
+
+func (h *Handler) storeUploadPieces(info *metainfo.Info, ih metainfo.Hash, files []*multipart.FileHeader) (err error) {
+	torrentStorage, err := h.Storage.OpenTorrent(info, ih)
+	if err != nil {
+		err = fmt.Errorf("opening storage for torrent: %w", err)
+		return
+	}
+	defer torrentStorage.Close()
+	r, w := io.Pipe()
+	go func() {
+		err := writeMultipartFiles(w, files)
+		if err != nil {
+			err = fmt.Errorf("writing upload multipart files: %w", err)
+		}
+		w.CloseWithError(err)
+	}()
+	defer r.Close()
+	buf := make([]byte, info.PieceLength)
+pieces:
+	for pieceIndex := 0; ; pieceIndex++ {
+		numRead, err := io.ReadFull(r, buf)
+		switch err {
+		default:
+			return fmt.Errorf("reading piece %v: %w", pieceIndex, err)
+		case io.EOF:
+			break pieces
+		case nil, io.ErrUnexpectedEOF:
+		}
+		pieceStorage := torrentStorage.Piece(info.Piece(pieceIndex))
+		numWritten, err := pieceStorage.WriteAt(buf[:numRead], 0)
+		if numWritten != numRead {
+			return fmt.Errorf("writing piece %v: %w", pieceIndex, err)
+		}
+		err = pieceStorage.MarkComplete()
+		if err != nil {
+			return fmt.Errorf("marking piece %v complete: %w", pieceIndex, err)
+		}
+	}
+	return nil
 }

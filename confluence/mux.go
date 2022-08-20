@@ -1,14 +1,19 @@
 package confluence
 
 import (
+	"github.com/anacrolix/log"
 	"io"
 	"net/http"
 
 	"github.com/anacrolix/missinggo/httptoo"
 )
 
-func (h *Handler) initMux() {
-	h.initMuxOnce.Do(func() {
+func (h *Handler) init() {
+	h.initOnce.Do(func() {
+		if h.Logger == nil {
+			h.Logger = &log.Default
+		}
+		h.Logger.Levelf(log.Debug, "initing handler %p", h)
 		mux := &h.mux
 		mux.Handle("/data", h.withTorrentContextFromQuery(dataQueryHandler))
 		mux.Handle("/data/infohash/", http.StripPrefix(
@@ -28,5 +33,6 @@ func (h *Handler) initMux() {
 		mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 			h.TC.WriteStatus(io.Discard)
 		})
+		mux.HandleFunc("/upload", h.uploadHandler)
 	})
 }
