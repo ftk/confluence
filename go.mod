@@ -7,14 +7,14 @@ require (
 	github.com/anacrolix/log v0.13.2-0.20220427063716-a4894bb521c6
 	github.com/anacrolix/missinggo v1.3.0
 	github.com/anacrolix/missinggo/v2 v2.7.0
-	github.com/anacrolix/publicip v0.2.0
+	github.com/anacrolix/publicip v0.3.0
 	github.com/anacrolix/squirrel v0.4.1-0.20220122230132-14b040773bac
 	github.com/anacrolix/tagflag v1.3.0
 	github.com/anacrolix/torrent v1.46.1-0.20220703115642-b58aec9ca8bd
-	github.com/arl/statsviz v0.4.0
-	github.com/prometheus/client_golang v1.12.2
-	golang.org/x/net v0.0.0-20220630215102-69896b714898
-	zombiezen.com/go/sqlite v0.8.0
+	github.com/arl/statsviz v0.4.1
+	github.com/prometheus/client_golang v1.13.0
+	golang.org/x/net v0.0.0-20220812174116-3211cb980234
+	zombiezen.com/go/sqlite v0.10.1
 )
 
 require (
@@ -34,7 +34,7 @@ require (
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/benbjohnson/immutable v0.3.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/bits-and-blooms/bitset v1.2.2 // indirect
+	github.com/bits-and-blooms/bitset v1.3.0 // indirect
 	github.com/bradfitz/iter v0.0.0-20191230175014-e8f45d346db8 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -47,46 +47,46 @@ require (
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/lispad/go-generics-tools v1.1.0 // indirect
-	github.com/mattn/go-isatty v0.0.12 // indirect
+	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/mschoch/smat v0.2.0 // indirect
 	github.com/pion/datachannel v1.5.2 // indirect
 	github.com/pion/dtls/v2 v2.1.5 // indirect
-	github.com/pion/ice/v2 v2.2.6 // indirect
-	github.com/pion/interceptor v0.1.11 // indirect
+	github.com/pion/ice/v2 v2.2.7 // indirect
+	github.com/pion/interceptor v0.1.12 // indirect
 	github.com/pion/logging v0.2.2 // indirect
 	github.com/pion/mdns v0.0.5 // indirect
 	github.com/pion/randutil v0.1.0 // indirect
-	github.com/pion/rtcp v1.2.9 // indirect
+	github.com/pion/rtcp v1.2.10 // indirect
 	github.com/pion/rtp v1.7.13 // indirect
 	github.com/pion/sctp v1.8.2 // indirect
-	github.com/pion/sdp/v3 v3.0.5 // indirect
-	github.com/pion/srtp/v2 v2.0.9 // indirect
+	github.com/pion/sdp/v3 v3.0.6 // indirect
+	github.com/pion/srtp/v2 v2.0.10 // indirect
 	github.com/pion/stun v0.3.5 // indirect
 	github.com/pion/transport v0.13.1 // indirect
 	github.com/pion/turn/v2 v2.0.8 // indirect
 	github.com/pion/udp v0.1.1 // indirect
-	github.com/pion/webrtc/v3 v3.1.42 // indirect
+	github.com/pion/webrtc/v3 v3.1.43 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
-	github.com/prometheus/common v0.35.0 // indirect
-	github.com/prometheus/procfs v0.7.3 // indirect
+	github.com/prometheus/common v0.37.0 // indirect
+	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
 	github.com/rs/dnscache v0.0.0-20211102005908-e0241e321417 // indirect
 	github.com/ryszard/goskiplist v0.0.0-20150312221310-2dfbae5fcf46 // indirect
-	github.com/tidwall/btree v1.3.1 // indirect
+	github.com/tidwall/btree v1.4.2 // indirect
 	go.etcd.io/bbolt v1.3.6 // indirect
-	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
-	golang.org/x/exp v0.0.0-20220613132600-b0d781184e0d // indirect
-	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f // indirect
-	golang.org/x/sys v0.0.0-20220702020025-31831981b65f // indirect
-	golang.org/x/time v0.0.0-20220609170525-579cf78fd858 // indirect
+	golang.org/x/crypto v0.0.0-20220817201139-bc19a97f63c8 // indirect
+	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e // indirect
+	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde // indirect
+	golang.org/x/sys v0.0.0-20220818161305-2296e01440c6 // indirect
+	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9 // indirect
 	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
-	modernc.org/libc v1.11.82 // indirect
+	google.golang.org/protobuf v1.28.1 // indirect
+	modernc.org/libc v1.16.19 // indirect
 	modernc.org/mathutil v1.4.1 // indirect
-	modernc.org/memory v1.0.5 // indirect
-	modernc.org/sqlite v1.14.2-0.20211125151325-d4ed92c0a70f // indirect
+	modernc.org/memory v1.1.1 // indirect
+	modernc.org/sqlite v1.18.1 // indirect
 )
 
 go 1.17
